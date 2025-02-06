@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:gist/comments.dart';
-
 import 'package:gist/story_view.dart';
 import 'create_post.dart';
 
@@ -16,7 +15,7 @@ class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
-    HomeScreenContent(),
+    const HomeScreenContent(),
     const Center(child: Text("Search Page", style: TextStyle(color: Colors.white))),
     const Center(child: Text("Notifications", style: TextStyle(color: Colors.white))),
     const Center(child: Text("Profile", style: TextStyle(color: Colors.white))),
@@ -33,8 +32,24 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Home"),
-        backgroundColor: Colors.purple,
+        title: const Text("Hi, Sam", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.video_call, color: Colors.white),
+            onPressed: () {
+              // Add video call functionality here
+              print("Video icon tapped");
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.message, color: Colors.white),
+            onPressed: () {
+              // Add messaging functionality here
+              print("Message icon tapped");
+            },
+          ),
+        ],
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -68,7 +83,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeScreenContent extends StatefulWidget {
-  HomeScreenContent({super.key});
+  const HomeScreenContent({super.key});
 
   @override
   State<HomeScreenContent> createState() => _HomeScreenContentState();
@@ -76,13 +91,9 @@ class HomeScreenContent extends StatefulWidget {
 
 class _HomeScreenContentState extends State<HomeScreenContent> {
   final List<Map<String, String>> dummyPosts = [
-    {"username": "Alice", "content": "Loving the new Flutter updates! 🚀🔥"},
-    {
-      "username": "Bob",
-      "content": "Just had the best coffee ☕️. Check out this café!"
-    },
-    {"username": "Bob", "content": "Just had the best coffee ☕️. Check out this café!"},
-    {"username": "Charlie", "content": "Can't believe how fast this year is going by! 😱"},
+    {"username": "Alice", "content": "Loving the new Flutter updates! 🚀🔥", "image": "assets/dubai.jpg", "profile": "assets/woman.jpg"},
+    {"username": "Bob", "content": "Just had the best coffee ☕️. Check out this café!", "image": "assets/hangout.jpg", "profile": "assets/man.jpg"},
+    {"username": "Charlie", "content": "Can't believe how fast this year is going by! 😱", "image": "assets/beach.jpg", "profile": "assets/people.jpg"},
   ];
 
   @override
@@ -98,6 +109,8 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                   context,
                   dummyPosts[index]["username"]!,
                   dummyPosts[index]["content"]!,
+                  dummyPosts[index]["image"]!,
+                  dummyPosts[index]["profile"]!,
                   index);
             },
           ),
@@ -105,7 +118,6 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
       ],
     );
   }
-
 
   Widget _buildStoriesSection(BuildContext context) {
     return Container(
@@ -160,9 +172,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     );
   }
 
-    List<bool> _isLikedList = [false, false, false,false];
-  List<bool> _isSavedList = [false, false, false,false];
-  List<int> _likeCounts = [0, 0, 0, 0];
+  final List<bool> _isLikedList = [false, false, false];
+  final List<bool> _isSavedList = [false, false, false];
+  final List<int> _likeCounts = [0, 0, 0];
 
   void _toggleLike(int index) {
     setState(() {
@@ -182,7 +194,7 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
   }
 
   Widget _buildPostCard(
-      BuildContext context, String username, String content, int index) {
+      BuildContext context, String username, String content, String image, String profile, int index) {
     bool isLiked = _isLikedList[index];
     bool isSaved = _isSavedList[index];
     int likeCount = _likeCounts[index];
@@ -192,7 +204,10 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
     return Card(
       color: Colors.grey[900],
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+        side: const BorderSide(color: Colors.white, width: 1),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Column(
@@ -200,9 +215,9 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
           children: [
             Row(
               children: [
-                const CircleAvatar(
-                  backgroundColor: Colors.purple,
-                  child: Icon(Icons.person, color: Colors.white),
+                CircleAvatar(
+                  backgroundImage: AssetImage(profile),
+                  radius: 20,
                 ),
                 const SizedBox(width: 10),
                 Text(username, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
@@ -212,6 +227,11 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
             ),
             const SizedBox(height: 10),
             Text(content, style: const TextStyle(color: Colors.white)),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.asset(image, fit: BoxFit.cover, width: double.infinity, height: 200),
+            ),
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -224,37 +244,38 @@ class _HomeScreenContentState extends State<HomeScreenContent> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) =>  CommentsPage(postId: '',)),
+                      MaterialPageRoute(builder: (context) => const CommentsPage(postId: '',)),
                     );
                   },
                 ),
                 _buildIconButton(
                   Icons.share,
                   "Share",
-                  () => {
+                  () {
                     // Add your share functionality here
-                   
                   },
-                  likeCount,
-                ),  
-                _buildIconButton(saveIcon, "Save", () => _toggleSave(index),null),
+                  null,
+                ),
+                _buildIconButton(saveIcon, "Save", () => _toggleSave(index), null),
               ],
             ),
           ],
+        ),
       ),
-    ));
-  }  
+    );
+  }
 
   Widget _buildIconButton(
       IconData icon, String tooltip, VoidCallback onTap, int? count) {
     return Row(
-        children: [
-      IconButton(
-        icon: Icon(icon, color: Colors.white70),
-        tooltip: tooltip,
-        onPressed: onTap,
-      ),
-      if (count != null) Text('$count', style: const TextStyle(color: Colors.white70))
-    ]);
+      children: [
+        IconButton(
+          icon: Icon(icon, color: Colors.white70),
+          tooltip: tooltip,
+          onPressed: onTap,
+        ),
+        if (count != null) Text('$count', style: const TextStyle(color: Colors.white70)),
+      ],
+    );
   }
 }
